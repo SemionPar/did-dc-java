@@ -1,27 +1,25 @@
 FROM docker
 
-# Default to UTF-8 file.encoding
 ENV LANG C.UTF-8
 
-# add a simple script that can auto-detect the appropriate JAVA_HOME value
-# based on whether the JDK or only the JRE is installed
-RUN { \
-		echo '#!/bin/sh'; \
-		echo 'set -e'; \
-		echo; \
-		echo 'dirname "$(dirname "$(readlink -f "$(which javac || which java)")")"'; \
-	} > /usr/local/bin/docker-java-home \
-	&& chmod +x /usr/local/bin/docker-java-home
-ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
-ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
+ENV JAVA_HOME="/jdk-12"
+ARG JDK_BUILD="14"
+ENV JDK_ARCHIVE="openjdk-12-ea+${JDK_BUILD}_linux-x64-musl_bin.tar.gz"
 
-ENV JAVA_VERSION 8u151
-ENV JAVA_ALPINE_VERSION 8.151.12-r0
+RUN wget https://download.java.net/java/early_access/alpine/${JDK_BUILD}/binaries/${JDK_ARCHIVE}
+RUN wget https://download.java.net/java/early_access/alpine/${JDK_BUILD}/binaries/${JDK_ARCHIVE}.sha256
+RUN echo "  ${JDK_ARCHIVE}" >> ${JDK_ARCHIVE}.sha256
+RUN sha256sum -c ${JDK_ARCHIVE}.sha256
+RUN tar -xzf ${JDK_ARCHIVE}
+RUN rm ${JDK_ARCHIVE} ${JDK_ARCHIVE}.sha256
+RUN rm ${JAVA_HOME}/lib/src.zip
 
-RUN set -x \
-	&& apk add --no-cache \
-		openjdk8="$JAVA_ALPINE_VERSION" \
-	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
+ENV PATH=$PATH:${JAVA_HOME}/bin
+
+ENV JAVA_VERSION 12-ea+${JDK_BUILD}
+ENV JAVA_ALPINE_VERSION 12~${JDK_BUILD}-1
+
+RUN echo $PATH
 
 RUN set -x \
     && apk add --no-cache py-pip bash openssh git
