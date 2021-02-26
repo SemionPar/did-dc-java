@@ -1,8 +1,6 @@
-# Docker in Docker, docker-compose, java 
+# openjdk11 + ssh
 Alpine-based image to use for CI builds featuring:
-- Docker-in-Docker,
-- docker-compose,
-- jdk12еа (http://jdk.java.net/12/ alpine build),
+- openjdk11 (https://hub.docker.com/r/adoptopenjdk/openjdk11/),
 - python,
 - openssh,
 - git
